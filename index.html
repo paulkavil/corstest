@@ -131,7 +131,6 @@
                 // This is the key test - making request from different origin with credentials
                 const response = await fetch(`https://www.myfitnesspal.com${endpoint}`, {
                     method: 'GET',
-                    credentials: 'include', // Include cookies/auth
                     headers: {
                         'Origin': window.location.origin, // Our malicious origin
                         'X-Requested-With': 'XMLHttpRequest'

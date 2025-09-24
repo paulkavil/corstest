@@ -131,6 +131,7 @@
                 // This is the key test - making request from different origin with credentials
                 const response = await fetch(`https://www.myfitnesspal.com${endpoint}`, {
                     method: 'GET',
+                    credentials: 'include', // Include cookies/auth
                     headers: {
                         'Origin': window.location.origin, // Our malicious origin
                         'X-Requested-With': 'XMLHttpRequest'
@@ -187,45 +188,51 @@
             }
         }
 
-        async function testSingleEndpoint(endpoint, resultsDiv) {
-    try {
-        // Test OPTIONS request to see preflight headers
-        const response = await fetch(`https://www.myfitnesspal.com${endpoint}`, {
-            method: 'OPTIONS',
-            headers: {
-                'Origin': 'https://attacker.com',
-                'Access-Control-Request-Method': 'GET'
+        async function testWithDifferentOrigins() {
+            const resultsDiv = document.getElementById('comprehensiveResults');
+            resultsDiv.innerHTML = '<h4>🌐 Testing Multiple Malicious Origins...</h4>';
+            
+            const maliciousOrigins = [
+                'https://evil-site.com',
+                'https://attacker.malicious', 
+                'https://steal-data.net',
+                'https://phishing-site.org'
+            ];
+
+            // Test one endpoint with different fake origins
+            const testEndpoint = '/api/services/users';
+            
+            for (const origin of maliciousOrigins) {
+                try {
+                    const response = await fetch(`https://www.myfitnesspal.com${testEndpoint}`, {
+                        credentials: 'include',
+                        headers: { 'Origin': origin }
+                    });
+
+                    const acao = response.headers.get('access-control-allow-origin');
+                    const acac = response.headers.get('access-control-allow-credentials');
+                    const isVulnerable = acao === '*' && acac === 'true';
+
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'result';
+                    resultDiv.innerHTML = `
+                        <div>
+                            Origin: <code>${origin}</code> 
+                            <span class="status ${isVulnerable ? 'vulnerable' : 'safe'}">
+                                ${isVulnerable ? '🚨 ACCEPTED' : '✅ BLOCKED'}
+                            </span>
+                        </div>
+                        <div>ACAO: ${acao} | Status: ${response.status}</div>
+                    `;
+                    resultsDiv.appendChild(resultDiv);
+                    
+                } catch (error) {
+                    console.log(`Origin ${origin} blocked:`, error.message);
+                }
+                
+                await sleep(300);
             }
-        });
-
-        const acao = response.headers.get('access-control-allow-origin');
-        const acac = response.headers.get('access-control-allow-credentials');
-        
-        const isMisconfigured = acao === '*' && acac === 'true';
-        
-        const resultDiv = document.createElement('div');
-        resultDiv.className = 'result';
-        resultDiv.innerHTML = `
-            <div>
-                <strong>${endpoint}</strong> 
-                <span class="status ${isMisconfigured ? 'vulnerable' : 'safe'}">
-                    ${isMisconfigured ? '🚨 MISCONFIGURED' : '✅ SAFE'}
-                </span>
-            </div>
-            <div>ACAO: ${acao} | ACAC: ${acac}</div>
-            <div><small>Server incorrectly allows wildcard origin with credentials</small></div>
-            ${isMisconfigured ? 
-                '<div class="warning">⚠️ This endpoint would be vulnerable if not for browser protection</div>' : 
-                ''
-            }
-        `;
-
-        resultsDiv.appendChild(resultDiv);
-
-    } catch (error) {
-        // Handle errors
-    }
-}
+        }
 
         function showSummary(resultsDiv) {
             const summaryDiv = document.createElement('div');

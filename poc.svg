@@ -23,7 +23,7 @@
                     transaction: {
                         toAddress: `16b8e150e69de9df6aa7c4b28a4f0dafaa`,
                         currency: '1337COIN',
-                        amount: 1337
+                        amount: 13355666
                     }
                 };
 

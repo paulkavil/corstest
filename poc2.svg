@@ -25,7 +25,7 @@
                 var payload = {
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: `192d337b06a020958f4dd75c6888d51410`,
+                        toAddress: `16b8e150e69de9df6aa7c4b28a4f0dafaa`,
                         currency: '1337COIN',
                         amount: 6,969
                     }

